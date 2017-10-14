@@ -16,7 +16,7 @@ public class Image
                     0x555555, 0x5555FF, 0x55FF55, 0x55FFFF,
                     0xFF5555, 0xFF55FF, 0xFFFF55, 0xFFFFFF};
     // Store a 2 dimensional image with "colours" as numbers between 0 and 15
-    private int pixels[][];
+    public int pixels[][];
 
     // Read in an image from a file. Each line of the file must be the same
     // length, and only contain single digit hex numbers 0-9 and a-f.
@@ -74,10 +74,12 @@ public class Image
 
     public static void main(String[] args)
     {
-        // A simple test to read in an image and print it out.
-        Image i = new Image(args[0]);
-        System.out.print(i.toString());
-        i.toPNG(args[0]);
+//        A simple test to read in an image and print it out.
+//        Image i = new Image(args[0]);
+//        System.out.print(i.toString());
+//        i.toPNG(args[0]);
+        Image image = new Image("./test-image1");
+        image.compress();
     }
 
     // Get back the original text-based representation
@@ -109,7 +111,8 @@ public class Image
      */
     public Drawing compress()
     {
-        return null;
+        Compressor c = new Compressor(this);
+        return c.compress();
     }
 
     // Render the image into a PNG with the given filename.
