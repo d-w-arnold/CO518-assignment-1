@@ -7,11 +7,13 @@ import java.util.*;
 public class Compressor
 {
     private Image image;
-
+    private Drawing drawing;
+    private Coordinate cursor;
 
     public Compressor(Image image)
     {
         this.image = image;
+        cursor = new Coordinate(0,0);
     }
 
     public Drawing compress()
@@ -31,43 +33,70 @@ public class Compressor
             }
         }
         int color = Collections.max(map.entrySet(), Comparator.comparingInt(Map.Entry::getValue)).getKey();
-        Drawing drawing = new Drawing(height, width, color);
-        int rowNum = 0;
-        for (int[] row : image.pixels) {
-            int pixelIndex;
-            int pCount = 0;
-            if ((rowNum%2) == 0) {
-                pixelIndex = 0;
-                while (pixelIndex < row.length && pixelIndex >= 0) {
-                    int pColor = row[pixelIndex];
-                    if (pixelIndex == row.length - 1 || pColor != row[pixelIndex + 1]) {
-                        drawing.addCommand(new DrawingCommand("right " + pCount + " " + Integer.toString(pColor, 16)));
-                    } else {
-                        pCount++;
-                    }
-                    pixelIndex++;
-                }
-                pixelIndex--;
-            } else {
-                pixelIndex = row.length - 1;
-                while (pixelIndex < row.length && pixelIndex >= 0) {
-                    int pColor = row[pixelIndex];
-                    if (pixelIndex == 0 || pColor != row[pixelIndex - 1]) {
-                        drawing.addCommand(new DrawingCommand("left " + pCount + " " + Integer.toString(pColor, 16)));
-                    } else {
-                        pCount++;
-                    }
-                    pixelIndex--;
-                }
-                pixelIndex++;
-            }
+        drawing = new Drawing(height, width, color);
 
-            if (rowNum < image.pixels.length - 1) {
-                int pCol = image.pixels[rowNum+1][pixelIndex];
-                drawing.addCommand(new DrawingCommand("down 1 " + Integer.toString(pCol, 16)));
-            }
-            rowNum++;
+        while (true) {
+            System.out.println(findNeighboursLength(Direction.RIGHT));
+            break;
         }
+
         return drawing;
+    }
+
+    private int findNeighboursLength(Direction d)
+    {
+        // if not stuck
+        int initialColor = image.get(cursor.x + 1, cursor.y);
+        int i = -1;
+        while (true) {
+            i++;
+            int newColor;
+            int newX = cursor.x + i + 1;
+            int y = cursor.y;
+            try {
+                newColor = image.get(newX, y);
+            } catch (ArrayIndexOutOfBoundsException e) {
+                break;
+            }
+            if (newColor == initialColor) {
+                continue;
+            }
+            break;
+        }
+        return i;
+    }
+}
+
+class Coordinate
+{
+    int x;
+    int y;
+
+    public Coordinate(int x, int y)
+    {
+        this.x = x;
+        this.y = y;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return x * y + x;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (obj instanceof Coordinate) {
+            Coordinate c = (Coordinate) obj;
+            return c.x == this.x && c.y == this.y;
+        }
+        return false;
+    }
+
+    @Override
+    public String toString()
+    {
+        return x + "," + y;
     }
 }
