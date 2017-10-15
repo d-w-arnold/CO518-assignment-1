@@ -13,7 +13,7 @@ public class Compressor
     public Compressor(Image image)
     {
         this.image = image;
-        cursor = new Coordinate(0,0);
+        cursor = new Coordinate(19,0);
     }
 
     public Drawing compress()
@@ -36,7 +36,7 @@ public class Compressor
         drawing = new Drawing(height, width, color);
 
         while (true) {
-            System.out.println(findNeighboursLength(Direction.RIGHT));
+            System.out.println(findNeighboursLength(Direction.LEFT));
             break;
         }
 
@@ -46,22 +46,58 @@ public class Compressor
     private int findNeighboursLength(Direction d)
     {
         // if not stuck
-        int initialColor = image.get(cursor.x + 1, cursor.y);
         int i = -1;
-        while (true) {
-            i++;
-            int newColor;
-            int newX = cursor.x + i + 1;
-            int y = cursor.y;
+        int reverseDirection = 1;
+        if (d == Direction.LEFT || d == Direction.RIGHT) {
+            int initialColor;
+            if (d == Direction.LEFT) {
+                reverseDirection = -1;
+            }
             try {
-                newColor = image.get(newX, y);
+                initialColor = image.get(cursor.x + reverseDirection, cursor.y);
             } catch (ArrayIndexOutOfBoundsException e) {
+                return 0;
+            }
+            while (true) {
+                i++;
+                int newColor;
+                int newX = cursor.x + ((i + 1) * reverseDirection);
+                int y = cursor.y;
+                try {
+                    newColor = image.get(newX, y);
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    break;
+                }
+                if (newColor == initialColor) {
+                    continue;
+                }
                 break;
             }
-            if (newColor == initialColor) {
-                continue;
+        } else {
+            int initialColor;
+            if (d == Direction.UP) {
+                reverseDirection = -1;
             }
-            break;
+            try {
+                initialColor = image.get(cursor.x, cursor.y + reverseDirection);
+            } catch (ArrayIndexOutOfBoundsException e) {
+                return 0;
+            }
+            while (true) {
+                i++;
+                int newColor;
+                int newY = cursor.y + ((i + 1) * reverseDirection);
+                int x = cursor.x;
+                try {
+                    newColor = image.get(x, newY);
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    break;
+                }
+                if (newColor == initialColor) {
+                    continue;
+                }
+                break;
+            }
         }
         return i;
     }
