@@ -9,11 +9,15 @@ public class Compressor
     private Image image;
     private Drawing drawing;
     private Coordinate cursor;
+    private ArrayList<Coordinate> allCoordinates;
+    ArrayList<Coordinate> drawnCoordinates;
 
     public Compressor(Image image)
     {
         this.image = image;
-        cursor = new Coordinate(19,0);
+        cursor = new Coordinate(0,0);
+        allCoordinates = new ArrayList<Coordinate>();
+        drawnCoordinates = new ArrayList<Coordinate>();
     }
 
     public Drawing compress()
@@ -34,13 +38,74 @@ public class Compressor
         }
         int color = Collections.max(map.entrySet(), Comparator.comparingInt(Map.Entry::getValue)).getKey();
         drawing = new Drawing(height, width, color);
+        for (int x = 0; x < image.pixels[0].length; x++) {
+            for (int y = 0; y < image.pixels.length; y++) {
+                allCoordinates.add(new Coordinate(x,y));
+            }
+        }
+        while (!drawnCoordinates.containsAll(allCoordinates)) {
+            Map.Entry<Direction, Integer> pairDirectionLength = findBestNeighbourDirection();
+            Direction d = pairDirectionLength.getKey();
+            int l = pairDirectionLength.getValue();
+            addCommand(d, l, true, 0);
 
-        while (true) {
-            System.out.println(findNeighboursLength(Direction.LEFT));
+            // System.out.println(findNeighboursLength(Direction.LEFT));
             break;
         }
 
         return drawing;
+    }
+
+    private void addCommand(Direction d, int l, boolean paint, int color)
+    {
+        if (paint) {
+            drawing.addCommand(new DrawingCommand(d + " " + l + " " + color));
+        } else {
+            drawing.addCommand(new DrawingCommand(d + " " + l));
+        }
+        if (d == Direction.LEFT) {
+            for (int i = 1; i <= l; i++) {
+                drawnCoordinates.add(new Coordinate(cursor.x - i, cursor.y));
+            }
+        }
+        if (d == Direction.RIGHT) {
+            for (int i = 1; i <= l; i++) {
+                drawnCoordinates.add(new Coordinate(cursor.x + i, cursor.y));
+            }
+        }
+        if (d == Direction.UP) {
+            for (int i = 1; i <= l; i++) {
+                drawnCoordinates.add(new Coordinate(cursor.x, cursor.y - i));
+            }
+        }
+        if (d == Direction.DOWN) {
+            for (int i = 1; i <= l; i++) {
+                drawnCoordinates.add(new Coordinate(cursor.x, cursor.y + i));
+            }
+        }
+        if (d == Direction.LEFT) {
+            cursor = new Coordinate(cursor.x - l, cursor.y);
+        }
+        if (d == Direction.RIGHT) {
+            cursor = new Coordinate(cursor.x + l, cursor.y);
+        }
+        if (d == Direction.UP) {
+            cursor = new Coordinate(cursor.x, cursor.y - l);
+        }
+        if (d == Direction.DOWN) {
+            cursor = new Coordinate(cursor.x, cursor.y + l);
+        }
+    }
+
+    private Map.Entry<Direction, Integer> findBestNeighbourDirection()
+    {
+        HashMap<Direction, Integer> map = new HashMap<Direction, Integer>();
+        map.put(Direction.LEFT, findNeighboursLength(Direction.LEFT));
+        map.put(Direction.RIGHT, findNeighboursLength(Direction.RIGHT));
+        map.put(Direction.UP, findNeighboursLength(Direction.UP));
+        map.put(Direction.DOWN, findNeighboursLength(Direction.DOWN));
+
+        return Collections.max(map.entrySet(), Comparator.comparingInt(Map.Entry::getValue));
     }
 
     private int findNeighboursLength(Direction d)
