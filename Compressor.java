@@ -51,7 +51,7 @@ public class Compressor
             } else {
                 Direction d = pairDirectionLength.getKey();
                 int l = pairDirectionLength.getValue();
-                addCommand(d, l, true, 0);
+                addCommand(d, l, true, getColorDirection(d));
             }
             System.out.print("");
         }
@@ -59,18 +59,71 @@ public class Compressor
         return drawing;
     }
 
+    private int getColorDirection(Direction d)
+    {
+        if (d == Direction.LEFT) {
+            return image.get(cursor.x - 1, cursor.y);
+        }
+        if (d == Direction.RIGHT) {
+            return image.get(cursor.x + 1, cursor.y);
+        }
+        if (d == Direction.UP) {
+            return image.get(cursor.x, cursor.y - 1);
+        }
+        if (d == Direction.DOWN) {
+            return image.get(cursor.x, cursor.y + 1);
+        }
+
+        return 0;
+    }
+
     private void resolveStuckCase()
     {
         ArrayList<Coordinate> notDrawn = new ArrayList<Coordinate>(allCoordinates);
         notDrawn.removeAll(drawnCoordinates);
-        Coordinate coordinateToMoveTo;
+        Coordinate coordinateSelected = null;
         int numOfMovesRequired = 0;
         for (Coordinate coordinate : notDrawn) {
             int costCalculated = calculateCost(coordinate);
             if (numOfMovesRequired == 0 || costCalculated < numOfMovesRequired) {
                 numOfMovesRequired = costCalculated;
-                coordinateToMoveTo = coordinate;
+                coordinateSelected = coordinate;
             }
+        }
+        if (coordinateSelected == null) {
+            System.err.println("No coordinate has been selected to resolve this stuck case.");
+            return;
+        }
+        ArrayList<Coordinate> spotsAroundCoordinateSelected = new ArrayList<Coordinate>();
+        spotsAroundCoordinateSelected.add(new Coordinate(coordinateSelected.x + 1, coordinateSelected.y));
+        spotsAroundCoordinateSelected.add(new Coordinate(coordinateSelected.x - 1, coordinateSelected.y));
+        spotsAroundCoordinateSelected.add(new Coordinate(coordinateSelected.x, coordinateSelected.y + 1));
+        spotsAroundCoordinateSelected.add(new Coordinate(coordinateSelected.x, coordinateSelected.y - 1));
+        Coordinate nextToCoordinateSelected = null;
+        int smallestCost = 0;
+        for (Coordinate coordinate : spotsAroundCoordinateSelected) {
+            int costCalculated = calculateCost(coordinate);
+            if (smallestCost == 0 || costCalculated < smallestCost) {
+                smallestCost = costCalculated;
+                nextToCoordinateSelected = coordinate;
+            }
+        }
+        if (nextToCoordinateSelected == null) {
+            System.err.println("No coordinate, next to target coordinate, has been selected to resolve this stuck case.");
+            return;
+        }
+        // work out the difference between cursor coordinate and the nextToCoordinateSelected
+        if (nextToCoordinateSelected.x < cursor.x) {
+            addCommand(Direction.LEFT, Math.abs(cursor.x - nextToCoordinateSelected.x), false, 0);
+        }
+        if (nextToCoordinateSelected.x > cursor.x) {
+            addCommand(Direction.RIGHT, Math.abs(nextToCoordinateSelected.x - cursor.x), false, 0);
+        }
+        if (nextToCoordinateSelected.y < cursor.y) {
+            addCommand(Direction.UP, Math.abs(cursor.y - nextToCoordinateSelected.y), false, 0);
+        }
+        if (nextToCoordinateSelected.y > cursor.y) {
+            addCommand(Direction.DOWN, Math.abs(nextToCoordinateSelected.y - cursor.y), false, 0);
         }
     }
 
@@ -88,8 +141,9 @@ public class Compressor
 
     private void addCommand(Direction d, int l, boolean paint, int color)
     {
+        String newHexColor = Integer.toString(color, 16);
         if (paint) {
-            drawing.addCommand(new DrawingCommand(d + " " + l + " " + color));
+            drawing.addCommand(new DrawingCommand(d + " " + l + " " + newHexColor));
         } else {
             drawing.addCommand(new DrawingCommand(d + " " + l));
         }

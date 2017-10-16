@@ -80,13 +80,13 @@ public class Image
 //        i.toPNG(args[0]);
         Image image = new Image("./test-image1");
         Drawing d = image.compress();
-//        //System.out.println(d.commands.size());
-//        try {
-//            System.out.println(d.draw());
-//            System.out.println(d.draw().toString().equals(image.toString()));
-//        } catch (BadCommand badCommand) {
-//            badCommand.printStackTrace();
-//        }
+        System.out.println(d.commands.size());
+        try {
+            System.out.println(d.draw());
+            System.out.println(d.draw().toString().equals(image.toString()));
+        } catch (BadCommand badCommand) {
+            badCommand.printStackTrace();
+        }
     }
 
     // Get back the original text-based representation
