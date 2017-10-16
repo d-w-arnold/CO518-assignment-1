@@ -1,4 +1,5 @@
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author David W. Arnold
@@ -45,15 +46,44 @@ public class Compressor
         }
         while (!drawnCoordinates.containsAll(allCoordinates)) {
             Map.Entry<Direction, Integer> pairDirectionLength = findBestNeighbourDirection();
-            Direction d = pairDirectionLength.getKey();
-            int l = pairDirectionLength.getValue();
-            addCommand(d, l, true, 0);
-
-            // System.out.println(findNeighboursLength(Direction.LEFT));
-            break;
+            if(pairDirectionLength == null) {
+                resolveStuckCase();
+            } else {
+                Direction d = pairDirectionLength.getKey();
+                int l = pairDirectionLength.getValue();
+                addCommand(d, l, true, 0);
+            }
+            System.out.print("");
         }
 
         return drawing;
+    }
+
+    private void resolveStuckCase()
+    {
+        ArrayList<Coordinate> notDrawn = new ArrayList<Coordinate>(allCoordinates);
+        notDrawn.removeAll(drawnCoordinates);
+        Coordinate coordinateToMoveTo;
+        int numOfMovesRequired = 0;
+        for (Coordinate coordinate : notDrawn) {
+            int costCalculated = calculateCost(coordinate);
+            if (numOfMovesRequired == 0 || costCalculated < numOfMovesRequired) {
+                numOfMovesRequired = costCalculated;
+                coordinateToMoveTo = coordinate;
+            }
+        }
+    }
+
+    private int calculateCost(Coordinate c)
+    {
+        int cost = 0;
+        if (c.x != cursor.x) {
+            cost++;
+        }
+        if (c.y != cursor.y) {
+            cost++;
+        }
+        return cost;
     }
 
     private void addCommand(Direction d, int l, boolean paint, int color)
@@ -99,18 +129,25 @@ public class Compressor
 
     private Map.Entry<Direction, Integer> findBestNeighbourDirection()
     {
-        HashMap<Direction, Integer> map = new HashMap<Direction, Integer>();
+        Map<Direction, Integer> map = new HashMap<Direction, Integer>();
         map.put(Direction.LEFT, findNeighboursLength(Direction.LEFT));
         map.put(Direction.RIGHT, findNeighboursLength(Direction.RIGHT));
         map.put(Direction.UP, findNeighboursLength(Direction.UP));
         map.put(Direction.DOWN, findNeighboursLength(Direction.DOWN));
+
+        map = map.entrySet().stream()
+                .filter(e -> e.getValue() > 0)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        if (map.size() == 0) {
+            return null;
+        }
 
         return Collections.max(map.entrySet(), Comparator.comparingInt(Map.Entry::getValue));
     }
 
     private int findNeighboursLength(Direction d)
     {
-        // if not stuck
         int i = -1;
         int reverseDirection = 1;
         if (d == Direction.LEFT || d == Direction.RIGHT) {
@@ -128,15 +165,17 @@ public class Compressor
                 int newColor;
                 int newX = cursor.x + ((i + 1) * reverseDirection);
                 int y = cursor.y;
+                if (drawnCoordinates.contains(new Coordinate(newX, y))) {
+                    break;
+                }
                 try {
                     newColor = image.get(newX, y);
                 } catch (ArrayIndexOutOfBoundsException e) {
                     break;
                 }
-                if (newColor == initialColor) {
-                    continue;
+                if (newColor != initialColor) {
+                    break;
                 }
-                break;
             }
         } else {
             int initialColor;
@@ -153,15 +192,17 @@ public class Compressor
                 int newColor;
                 int newY = cursor.y + ((i + 1) * reverseDirection);
                 int x = cursor.x;
+                if (drawnCoordinates.contains(new Coordinate(x, newY))) {
+                    break;
+                }
                 try {
                     newColor = image.get(x, newY);
                 } catch (ArrayIndexOutOfBoundsException e) {
                     break;
                 }
-                if (newColor == initialColor) {
-                    continue;
+                if (newColor != initialColor) {
+                    break;
                 }
-                break;
             }
         }
         return i;
