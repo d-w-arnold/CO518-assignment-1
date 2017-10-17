@@ -78,8 +78,8 @@ public class Image
 //        Image i = new Image(args[0]);
 //        System.out.print(i.toString());
 //        i.toPNG(args[0]);
-        Image image = new Image("./test-image1");
-        Drawing d = image.compress();
+        Image image = new Image("./test-image2");
+        Drawing d = image.compressDebug();
         System.out.println(d.commands.size());
         try {
             System.out.println(d.draw());
@@ -122,6 +122,13 @@ public class Image
         return c.compress();
     }
 
+    // remove with CompressorDebugger.java
+    public Drawing compressDebug()
+    {
+        Compressor c = new CompressorDebugger(this);
+        return c.compress();
+    }
+
     // Render the image into a PNG with the given filename.
     public void toPNG(String filename)
     {
@@ -151,5 +158,10 @@ public class Image
         } catch (ArrayIndexOutOfBoundsException e) {
             throw new BadCommand();
         }
+    }
+
+    public int get(int x, int y)
+    {
+        return pixels[y][x];
     }
 }
