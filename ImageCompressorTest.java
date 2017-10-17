@@ -40,6 +40,42 @@ public class ImageCompressorTest
         testWithFile("./test-image5");
     }
 
+    @Test
+    public void pixel1()
+    {
+        testWithFile("./pixel-art1");
+    }
+
+    @Test
+    public void pixel2()
+    {
+        testWithFile("./pixel-art2");
+    }
+
+    @Test
+    public void pixel3()
+    {
+        testWithFile("./pixel-art3");
+    }
+
+    @Test
+    public void pixel4()
+    {
+        testWithFile("./pixel-art4");
+    }
+
+    @Test
+    public void pixel5()
+    {
+        testWithFile("./pixel-art5");
+    }
+
+    @Test
+    public void pixel6()
+    {
+        testWithFile("./pixel-art6");
+    }
+
     private void testWithFile(String filename) {
         Image i = new Image(filename);
 

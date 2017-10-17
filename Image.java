@@ -78,8 +78,8 @@ public class Image
 //        Image i = new Image(args[0]);
 //        System.out.print(i.toString());
 //        i.toPNG(args[0]);
-        Image image = new Image("./test-image4");
-        Drawing d = image.compress();
+        Image image = new Image("./test-image2");
+        Drawing d = image.compressDebug();
         System.out.println(d.commands.size());
         try {
             System.out.println(d.draw());
@@ -119,6 +119,13 @@ public class Image
     public Drawing compress()
     {
         Compressor c = new Compressor(this);
+        return c.compress();
+    }
+
+    // remove with CompressorDebugger.java
+    public Drawing compressDebug()
+    {
+        Compressor c = new CompressorDebugger(this);
         return c.compress();
     }
 

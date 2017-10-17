@@ -87,10 +87,10 @@ public class Compressor
         ArrayList<Coordinate> notDrawn = new ArrayList<Coordinate>(allCoordinates);
         notDrawn.removeAll(drawnCoordinates);
         Coordinate coordinateSelected = null;
-        int numOfMovesRequired = 0;
+        int numOfMovesRequired = -1;
         for (Coordinate coordinate : notDrawn) {
             int costCalculated = calculateCost(coordinate);
-            if (numOfMovesRequired == 0 || costCalculated < numOfMovesRequired) {
+            if (numOfMovesRequired == -1 || costCalculated < numOfMovesRequired) {
                 numOfMovesRequired = costCalculated;
                 coordinateSelected = coordinate;
             }
@@ -105,10 +105,10 @@ public class Compressor
         spotsAroundCoordinateSelected.add(new Coordinate(coordinateSelected.x, coordinateSelected.y + 1));
         spotsAroundCoordinateSelected.add(new Coordinate(coordinateSelected.x, coordinateSelected.y - 1));
         Coordinate nextToCoordinateSelected = null;
-        int smallestCost = 0;
+        int smallestCost = -1;
         for (Coordinate coordinate : spotsAroundCoordinateSelected) {
             int costCalculated = calculateCost(coordinate);
-            if (smallestCost == 0 || costCalculated < smallestCost) {
+            if (smallestCost == -1 || costCalculated < smallestCost) {
                 smallestCost = costCalculated;
                 nextToCoordinateSelected = coordinate;
             }
@@ -117,7 +117,6 @@ public class Compressor
             System.err.println("No coordinate, next to target coordinate, has been selected to resolve this stuck case.");
             return;
         }
-        // work out the difference between cursor coordinate and the nextToCoordinateSelected
         if (nextToCoordinateSelected.x < cursor.x) {
             addCommand(Direction.LEFT, Math.abs(cursor.x - nextToCoordinateSelected.x), false, 0);
         }
@@ -153,24 +152,26 @@ public class Compressor
         } else {
             drawing.addCommand(new DrawingCommand(d + " " + l));
         }
-        if (d == Direction.LEFT) {
-            for (int i = 1; i <= l; i++) {
-                drawnCoordinates.add(new Coordinate(cursor.x - i, cursor.y));
+        if (paint) {
+            if (d == Direction.LEFT) {
+                for (int i = 1; i <= l; i++) {
+                    drawnCoordinates.add(new Coordinate(cursor.x - i, cursor.y));
+                }
             }
-        }
-        if (d == Direction.RIGHT) {
-            for (int i = 1; i <= l; i++) {
-                drawnCoordinates.add(new Coordinate(cursor.x + i, cursor.y));
+            if (d == Direction.RIGHT) {
+                for (int i = 1; i <= l; i++) {
+                    drawnCoordinates.add(new Coordinate(cursor.x + i, cursor.y));
+                }
             }
-        }
-        if (d == Direction.UP) {
-            for (int i = 1; i <= l; i++) {
-                drawnCoordinates.add(new Coordinate(cursor.x, cursor.y - i));
+            if (d == Direction.UP) {
+                for (int i = 1; i <= l; i++) {
+                    drawnCoordinates.add(new Coordinate(cursor.x, cursor.y - i));
+                }
             }
-        }
-        if (d == Direction.DOWN) {
-            for (int i = 1; i <= l; i++) {
-                drawnCoordinates.add(new Coordinate(cursor.x, cursor.y + i));
+            if (d == Direction.DOWN) {
+                for (int i = 1; i <= l; i++) {
+                    drawnCoordinates.add(new Coordinate(cursor.x, cursor.y + i));
+                }
             }
         }
         if (d == Direction.LEFT) {
