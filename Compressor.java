@@ -7,9 +7,12 @@ import java.util.stream.Collectors;
  */
 public class Compressor
 {
-    private Image image;
-    private Drawing drawing;
-    private Coordinate cursor;
+    // make private
+    public Image image;
+    // make private
+    public Drawing drawing;
+    // make private
+    public Coordinate cursor;
     private ArrayList<Coordinate> allCoordinates;
     ArrayList<Coordinate> drawnCoordinates;
 
@@ -19,10 +22,7 @@ public class Compressor
         cursor = new Coordinate(0,0);
         allCoordinates = new ArrayList<Coordinate>();
         drawnCoordinates = new ArrayList<Coordinate>();
-    }
 
-    public Drawing compress()
-    {
         HashMap<Integer, Integer> map = new HashMap<Integer, Integer>();
         int height = image.pixels.length;
         int width = image.pixels[0].length;
@@ -39,6 +39,11 @@ public class Compressor
         }
         int color = Collections.max(map.entrySet(), Comparator.comparingInt(Map.Entry::getValue)).getKey();
         drawing = new Drawing(height, width, color);
+    }
+
+    public Drawing compress()
+    {
+
         for (int x = 0; x < image.pixels[0].length; x++) {
             for (int y = 0; y < image.pixels.length; y++) {
                 allCoordinates.add(new Coordinate(x,y));
@@ -139,7 +144,8 @@ public class Compressor
         return cost;
     }
 
-    private void addCommand(Direction d, int l, boolean paint, int color)
+    //make private
+    protected void addCommand(Direction d, int l, boolean paint, int color)
     {
         String newHexColor = Integer.toString(color, 16);
         if (paint) {
