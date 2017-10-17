@@ -102,11 +102,12 @@ class DrawingCommand
 class BadCommand extends Exception
 {
     // Consider adding fields here describing the exceptional circumstance
+    // TODO Fill in BadCommand
 }
 
 // Represent a picture as the height and width, and a sequence of drawing
 // commands to build it. Also has an initial background colour. Each command
-// starts at the current location and draws a certain number of spaces to get
+// starts at the current location and draws a certain number of spaces to getColor
 // to the next location. If a colour is given, it paints over the spaces
 // in-between, including the final destination space, but not the initial
 // space. Otherwise, it just updates the position. The starting position is at
@@ -206,9 +207,12 @@ public class Drawing
 
     public static void main(String[] args)
     {
+        // ** Change for submission **
         args = new String[1];
+        // ** Change for submission **
         args[0] = "test-commands1";
-        // A simple test to read in an file of drawing commands and print it out.
+
+        // A simple test to read in a file of drawing commands and print it out.
         Drawing d = new Drawing(args[0]);
         try {
             System.out.print(d.draw().toString());
@@ -243,7 +247,7 @@ public class Drawing
      * is made to paint outside of the picture.
      * (5 marks)
      *
-     * @return An Image.
+     * @return An Image object.
      */
     public Image draw() throws BadCommand
     {

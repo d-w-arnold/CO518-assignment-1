@@ -1,18 +1,11 @@
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * @author David W. Arnold
- * @version 14/10/2017
- */
 public class Compressor
 {
-    // make private
-    public Image image;
-    // make private
-    public Drawing drawing;
-    // make private
-    public Coordinate cursor;
+    private Image image;
+    private Drawing drawing;
+    private Coordinate cursor;
     private ArrayList<Coordinate> allCoordinates;
     ArrayList<Coordinate> drawnCoordinates;
 
@@ -37,19 +30,23 @@ public class Compressor
                 map.put(n, tmp);
             }
         }
+
         int color = Collections.max(map.entrySet(), Comparator.comparingInt(Map.Entry::getValue)).getKey();
         drawing = new Drawing(height, width, color);
     }
 
     public Drawing compress()
     {
-
         for (int x = 0; x < image.pixels[0].length; x++) {
             for (int y = 0; y < image.pixels.length; y++) {
                 allCoordinates.add(new Coordinate(x,y));
             }
         }
-        while (!drawnCoordinates.containsAll(allCoordinates)) {
+
+        ArrayList<Coordinate> allCoordinatesExceptBackground = new ArrayList<Coordinate>(allCoordinates);
+        allCoordinatesExceptBackground.removeIf(coordinate -> image.getColor(coordinate.x, coordinate.y) == drawing.background);
+
+        while (!drawnCoordinates.containsAll(allCoordinatesExceptBackground)) {
             Map.Entry<Direction, Integer> pairDirectionLength = findBestNeighbourDirection();
             if(pairDirectionLength == null) {
                 resolveStuckCase();
@@ -67,16 +64,16 @@ public class Compressor
     private int getColorDirection(Direction d)
     {
         if (d == Direction.LEFT) {
-            return image.get(cursor.x - 1, cursor.y);
+            return image.getColor(cursor.x - 1, cursor.y);
         }
         if (d == Direction.RIGHT) {
-            return image.get(cursor.x + 1, cursor.y);
+            return image.getColor(cursor.x + 1, cursor.y);
         }
         if (d == Direction.UP) {
-            return image.get(cursor.x, cursor.y - 1);
+            return image.getColor(cursor.x, cursor.y - 1);
         }
         if (d == Direction.DOWN) {
-            return image.get(cursor.x, cursor.y + 1);
+            return image.getColor(cursor.x, cursor.y + 1);
         }
 
         return 0;
@@ -86,6 +83,8 @@ public class Compressor
     {
         ArrayList<Coordinate> notDrawn = new ArrayList<Coordinate>(allCoordinates);
         notDrawn.removeAll(drawnCoordinates);
+        notDrawn.removeIf(coordinate -> image.getColor(coordinate.x, coordinate.y) == drawing.background);
+
         Coordinate coordinateSelected = null;
         int numOfMovesRequired = -1;
         for (Coordinate coordinate : notDrawn) {
@@ -95,15 +94,18 @@ public class Compressor
                 coordinateSelected = coordinate;
             }
         }
+
         if (coordinateSelected == null) {
             System.err.println("No coordinate has been selected to resolve this stuck case.");
             return;
         }
+
         ArrayList<Coordinate> spotsAroundCoordinateSelected = new ArrayList<Coordinate>();
         spotsAroundCoordinateSelected.add(new Coordinate(coordinateSelected.x + 1, coordinateSelected.y));
         spotsAroundCoordinateSelected.add(new Coordinate(coordinateSelected.x - 1, coordinateSelected.y));
         spotsAroundCoordinateSelected.add(new Coordinate(coordinateSelected.x, coordinateSelected.y + 1));
         spotsAroundCoordinateSelected.add(new Coordinate(coordinateSelected.x, coordinateSelected.y - 1));
+
         Coordinate nextToCoordinateSelected = null;
         int smallestCost = -1;
         for (Coordinate coordinate : spotsAroundCoordinateSelected) {
@@ -113,10 +115,12 @@ public class Compressor
                 nextToCoordinateSelected = coordinate;
             }
         }
+
         if (nextToCoordinateSelected == null) {
             System.err.println("No coordinate, next to target coordinate, has been selected to resolve this stuck case.");
             return;
         }
+
         if (nextToCoordinateSelected.x < cursor.x) {
             addCommand(Direction.LEFT, Math.abs(cursor.x - nextToCoordinateSelected.x), false, 0);
         }
@@ -140,11 +144,12 @@ public class Compressor
         if (c.y != cursor.y) {
             cost++;
         }
+
         return cost;
     }
 
     //make private
-    protected void addCommand(Direction d, int l, boolean paint, int color)
+    private void addCommand(Direction d, int l, boolean paint, int color)
     {
         String newHexColor = Integer.toString(color, 16);
         if (paint) {
@@ -152,6 +157,7 @@ public class Compressor
         } else {
             drawing.addCommand(new DrawingCommand(d + " " + l));
         }
+
         if (paint) {
             if (d == Direction.LEFT) {
                 for (int i = 1; i <= l; i++) {
@@ -174,6 +180,7 @@ public class Compressor
                 }
             }
         }
+
         if (d == Direction.LEFT) {
             cursor = new Coordinate(cursor.x - l, cursor.y);
         }
@@ -217,7 +224,7 @@ public class Compressor
                 reverseDirection = -1;
             }
             try {
-                initialColor = image.get(cursor.x + reverseDirection, cursor.y);
+                initialColor = image.getColor(cursor.x + reverseDirection, cursor.y);
             } catch (ArrayIndexOutOfBoundsException e) {
                 return 0;
             }
@@ -226,12 +233,12 @@ public class Compressor
                 int newColor;
                 int newX = cursor.x + ((i + 1) * reverseDirection);
                 int y = cursor.y;
-                if (drawnCoordinates.contains(new Coordinate(newX, y))) {
+                try {
+                    newColor = image.getColor(newX, y);
+                } catch (ArrayIndexOutOfBoundsException e) {
                     break;
                 }
-                try {
-                    newColor = image.get(newX, y);
-                } catch (ArrayIndexOutOfBoundsException e) {
+                if (drawnCoordinates.contains(new Coordinate(newX, y)) || image.getColor(newX, y) == drawing.background) {
                     break;
                 }
                 if (newColor != initialColor) {
@@ -244,7 +251,7 @@ public class Compressor
                 reverseDirection = -1;
             }
             try {
-                initialColor = image.get(cursor.x, cursor.y + reverseDirection);
+                initialColor = image.getColor(cursor.x, cursor.y + reverseDirection);
             } catch (ArrayIndexOutOfBoundsException e) {
                 return 0;
             }
@@ -253,12 +260,12 @@ public class Compressor
                 int newColor;
                 int newY = cursor.y + ((i + 1) * reverseDirection);
                 int x = cursor.x;
-                if (drawnCoordinates.contains(new Coordinate(x, newY))) {
+                try {
+                    newColor = image.getColor(x, newY);
+                } catch (ArrayIndexOutOfBoundsException e) {
                     break;
                 }
-                try {
-                    newColor = image.get(x, newY);
-                } catch (ArrayIndexOutOfBoundsException e) {
+                if (drawnCoordinates.contains(new Coordinate(x, newY)) || image.getColor(x, newY) == drawing.background) {
                     break;
                 }
                 if (newColor != initialColor) {
@@ -266,6 +273,7 @@ public class Compressor
                 }
             }
         }
+
         return i;
     }
 }

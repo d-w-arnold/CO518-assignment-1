@@ -1,14 +1,12 @@
 import org.junit.Test;
-
 import java.util.ArrayList;
 import java.util.Objects;
-
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 
-public class ImageCompressorTest
+public class CompressorTest
 {
     @Test
     public void image1()
@@ -76,12 +74,15 @@ public class ImageCompressorTest
         testWithFile("./pixel-art6");
     }
 
-    private void testWithFile(String filename) {
+    private void testWithFile(String filename)
+    {
         Image i = new Image(filename);
+
+        String s = filename.substring(2);
 
         Drawing d = i.compress();
 
-        System.out.println("Nb commands: " + d.commands.size());
+        System.out.println(s + " commands: " + d.commands.size());
 
         try {
             assertEquals(i.toString(), d.draw().toString());

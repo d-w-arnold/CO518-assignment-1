@@ -74,12 +74,12 @@ public class Image
 
     public static void main(String[] args)
     {
-//        A simple test to read in an image and print it out.
-//        Image i = new Image(args[0]);
-//        System.out.print(i.toString());
-//        i.toPNG(args[0]);
+//      A simple test to read in an image and print it out.
+//      Image i = new Image(args[0]);
+//      System.out.print(i.toString());
+//      i.toPNG(args[0]);
         Image image = new Image("./test-image2");
-        Drawing d = image.compressDebug();
+        Drawing d = image.compress();
         System.out.println(d.commands.size());
         try {
             System.out.println(d.draw());
@@ -122,13 +122,6 @@ public class Image
         return c.compress();
     }
 
-    // remove with CompressorDebugger.java
-    public Drawing compressDebug()
-    {
-        Compressor c = new CompressorDebugger(this);
-        return c.compress();
-    }
-
     // Render the image into a PNG with the given filename.
     public void toPNG(String filename)
     {
@@ -150,7 +143,7 @@ public class Image
     }
 
     /**
-     * Task 1
+     * Task 1:
      */
     public void set(int x, int y, int color) throws BadCommand {
         try {
@@ -160,7 +153,7 @@ public class Image
         }
     }
 
-    public int get(int x, int y)
+    public int getColor(int x, int y)
     {
         return pixels[y][x];
     }
