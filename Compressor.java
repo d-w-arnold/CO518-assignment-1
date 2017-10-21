@@ -3,35 +3,44 @@ import java.util.stream.Collectors;
 
 public class Compressor
 {
-    private Image image;
-    private Drawing drawing;
-    private Coordinate cursor;
-    private ArrayList<Coordinate> allCoordinates;
-    ArrayList<Coordinate> drawnCoordinates;
+    // TODO make three fields private
+    protected Image image;
+    protected Drawing drawing;
+    protected Coordinate cursor;
+    List<Coordinate> drawnCoordinates;
+    List<Integer> colors;
+    private List<Coordinate> allCoordinates;
+    private int colorIndexToTest = 0;
 
     public Compressor(Image image)
     {
         this.image = image;
-        cursor = new Coordinate(0,0);
+        cursor = new Coordinate(0, 0);
         allCoordinates = new ArrayList<Coordinate>();
         drawnCoordinates = new ArrayList<Coordinate>();
 
-        HashMap<Integer, Integer> map = new HashMap<Integer, Integer>();
+
+        HashMap<Integer, Integer> mapOfColors = new HashMap<Integer, Integer>();
         int height = image.pixels.length;
         int width = image.pixels[0].length;
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 int tmp = 0;
                 int n = image.pixels[y][x];
-                if (map.containsKey(n)) {
-                    tmp = map.get(n);
+                if (mapOfColors.containsKey(n)) {
+                    tmp = mapOfColors.get(n);
                 }
                 tmp++;
-                map.put(n, tmp);
+                mapOfColors.put(n, tmp);
             }
         }
 
-        int color = Collections.max(map.entrySet(), Comparator.comparingInt(Map.Entry::getValue)).getKey();
+        colors = mapOfColors.entrySet().stream()
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+
+        // TODO make algorithm more predictive
+        int color = Collections.max(mapOfColors.entrySet(), Comparator.comparingInt(Map.Entry::getValue)).getKey();
         drawing = new Drawing(height, width, color);
     }
 
@@ -39,7 +48,7 @@ public class Compressor
     {
         for (int x = 0; x < image.pixels[0].length; x++) {
             for (int y = 0; y < image.pixels.length; y++) {
-                allCoordinates.add(new Coordinate(x,y));
+                allCoordinates.add(new Coordinate(x, y));
             }
         }
 
@@ -48,17 +57,29 @@ public class Compressor
 
         while (!drawnCoordinates.containsAll(allCoordinatesExceptBackground)) {
             Map.Entry<Direction, Integer> pairDirectionLength = findBestNeighbourDirection();
-            if(pairDirectionLength == null) {
+            if (pairDirectionLength == null) {
                 resolveStuckCase();
             } else {
                 Direction d = pairDirectionLength.getKey();
                 int l = pairDirectionLength.getValue();
-                addCommand(d, l, true, getColorDirection(d));
+                addCommand(d, l, true, getColorToTest());
+            }
+            ArrayList<Coordinate> currentColorDrawnCoordinates = new ArrayList<Coordinate>(drawnCoordinates);
+            currentColorDrawnCoordinates.removeIf(coordinate -> image.getColor(coordinate) != getColorToTest());
+            ArrayList<Coordinate> currentColorAllCoordinatesExceptBackground = new ArrayList<Coordinate>(allCoordinatesExceptBackground);
+            currentColorAllCoordinatesExceptBackground.removeIf(coordinate -> image.getColor(coordinate) != getColorToTest());
+            if (currentColorDrawnCoordinates.containsAll(currentColorAllCoordinatesExceptBackground)) {
+                colorIndexToTest++;
             }
             System.out.print("");
         }
 
         return drawing;
+    }
+
+    private int getColorToTest()
+    {
+        return colors.get(colorIndexToTest);
     }
 
     private int getColorDirection(Direction d)
@@ -83,7 +104,7 @@ public class Compressor
     {
         ArrayList<Coordinate> notDrawn = new ArrayList<Coordinate>(allCoordinates);
         notDrawn.removeAll(drawnCoordinates);
-        notDrawn.removeIf(coordinate -> image.getColor(coordinate.x, coordinate.y) == drawing.background);
+        notDrawn.removeIf(coordinate -> image.getColor(coordinate.x, coordinate.y) != getColorToTest());
 
         Coordinate coordinateSelected = null;
         int numOfMovesRequired = -1;
@@ -148,8 +169,8 @@ public class Compressor
         return cost;
     }
 
-    //make private
-    private void addCommand(Direction d, int l, boolean paint, int color)
+    // TODO make addCommand method private
+    protected void addCommand(Direction d, int l, boolean paint, int color)
     {
         String newHexColor = Integer.toString(color, 16);
         if (paint) {
@@ -219,14 +240,9 @@ public class Compressor
         int i = -1;
         int reverseDirection = 1;
         if (d == Direction.LEFT || d == Direction.RIGHT) {
-            int initialColor;
+
             if (d == Direction.LEFT) {
                 reverseDirection = -1;
-            }
-            try {
-                initialColor = image.getColor(cursor.x + reverseDirection, cursor.y);
-            } catch (ArrayIndexOutOfBoundsException e) {
-                return 0;
             }
             while (true) {
                 i++;
@@ -241,19 +257,13 @@ public class Compressor
                 if (drawnCoordinates.contains(new Coordinate(newX, y)) || image.getColor(newX, y) == drawing.background) {
                     break;
                 }
-                if (newColor != initialColor) {
+                if (newColor != getColorToTest()) {
                     break;
                 }
             }
         } else {
-            int initialColor;
             if (d == Direction.UP) {
                 reverseDirection = -1;
-            }
-            try {
-                initialColor = image.getColor(cursor.x, cursor.y + reverseDirection);
-            } catch (ArrayIndexOutOfBoundsException e) {
-                return 0;
             }
             while (true) {
                 i++;
@@ -268,7 +278,7 @@ public class Compressor
                 if (drawnCoordinates.contains(new Coordinate(x, newY)) || image.getColor(x, newY) == drawing.background) {
                     break;
                 }
-                if (newColor != initialColor) {
+                if (newColor != getColorToTest()) {
                     break;
                 }
             }

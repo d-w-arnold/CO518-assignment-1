@@ -78,8 +78,10 @@ public class Image
 //      Image i = new Image(args[0]);
 //      System.out.print(i.toString());
 //      i.toPNG(args[0]);
-        Image image = new Image("./test-image2");
-        Drawing d = image.compress();
+        // TODO Set image for args[0]
+        Image image = new Image("./test-image5");
+        // TODO change to compress method
+        Drawing d = image.compressDebug();
         System.out.println(d.commands.size());
         try {
             System.out.println(d.draw());
@@ -122,6 +124,13 @@ public class Image
         return c.compress();
     }
 
+    // TODO remove compressDebug method
+    public Drawing compressDebug()
+    {
+        Compressor c = new CompressorDebugger(this);
+        return c.compress();
+    }
+
     // Render the image into a PNG with the given filename.
     public void toPNG(String filename)
     {
@@ -156,5 +165,10 @@ public class Image
     public int getColor(int x, int y)
     {
         return pixels[y][x];
+    }
+
+    public  int getColor(Coordinate c)
+    {
+        return getColor(c.x, c.y);
     }
 }
