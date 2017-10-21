@@ -251,6 +251,8 @@ public class Compressor
 
     private int findNeighboursLength(Direction d)
     {
+        boolean ifTheLineContainsColor = false;
+        boolean ifTheLineHasNewThingsToBeDrawn = false;
         int i = -1;
         int reverseDirection = 1;
         if (d == Direction.LEFT || d == Direction.RIGHT) {
@@ -268,12 +270,18 @@ public class Compressor
                 } catch (ArrayIndexOutOfBoundsException e) {
                     break;
                 }
-                if (drawnCoordinates.contains(new Coordinate(newX, y)) || image.getColor(newX, y) == drawing.background) {
+                if (colorsDrawn.contains(newColor)) {
                     break;
                 }
-                if (newColor != getColorToTest()) {
-                    break;
+                if (newColor == getColorToTest()) {
+                    ifTheLineContainsColor = true;
                 }
+                if (!drawnCoordinates.contains(new Coordinate(newX, y))) {
+                    ifTheLineHasNewThingsToBeDrawn = true;
+                }
+            }
+            if (!ifTheLineContainsColor || !ifTheLineHasNewThingsToBeDrawn) {
+                return 0;
             }
         } else {
             if (d == Direction.UP) {
@@ -289,12 +297,18 @@ public class Compressor
                 } catch (ArrayIndexOutOfBoundsException e) {
                     break;
                 }
-                if (drawnCoordinates.contains(new Coordinate(x, newY)) || image.getColor(x, newY) == drawing.background) {
+                if (colorsDrawn.contains(newColor)) {
                     break;
                 }
-                if (newColor != getColorToTest()) {
-                    break;
+                if (newColor == getColorToTest()) {
+                    ifTheLineContainsColor = true;
                 }
+                if (!drawnCoordinates.contains(new Coordinate(x, newY))) {
+                    ifTheLineHasNewThingsToBeDrawn = true;
+                }
+            }
+            if (!ifTheLineContainsColor || !ifTheLineHasNewThingsToBeDrawn) {
+                return 0;
             }
         }
 

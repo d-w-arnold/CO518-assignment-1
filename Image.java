@@ -79,7 +79,7 @@ public class Image
 //      System.out.print(i.toString());
 //      i.toPNG(args[0]);
         // TODO Set image for args[0]
-        Image image = new Image("./test-image5");
+        Image image = new Image("./pixel-art1");
         // TODO change to compress method
         Drawing d = image.compressDebug();
         System.out.println(d.commands.size());
