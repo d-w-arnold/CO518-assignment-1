@@ -19,29 +19,30 @@ public class Compressor
         allCoordinates = new ArrayList<Coordinate>();
         drawnCoordinates = new ArrayList<Coordinate>();
 
-
         HashMap<Integer, Integer> mapOfColors = new HashMap<Integer, Integer>();
         int height = image.pixels.length;
         int width = image.pixels[0].length;
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                int tmp = 0;
-                int n = image.pixels[y][x];
-                if (mapOfColors.containsKey(n)) {
-                    tmp = mapOfColors.get(n);
+                int count = 0;
+                int color = image.getColor(x, y);
+                if (mapOfColors.containsKey(color)) {
+                    count = mapOfColors.get(color);
                 }
-                tmp++;
-                mapOfColors.put(n, tmp);
+                count++;
+                mapOfColors.put(color, count);
             }
         }
 
         colors = mapOfColors.entrySet().stream()
+                .sorted((a, b) -> Integer.compare(b.getValue(), a.getValue()))
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
 
         // TODO make algorithm more predictive
-        int color = Collections.max(mapOfColors.entrySet(), Comparator.comparingInt(Map.Entry::getValue)).getKey();
-        drawing = new Drawing(height, width, color);
+        int backgroundColor = getColorToTest();
+        colorIndexToTest++;
+        drawing = new Drawing(height, width, backgroundColor);
     }
 
     public Drawing compress()
@@ -55,7 +56,9 @@ public class Compressor
         ArrayList<Coordinate> allCoordinatesExceptBackground = new ArrayList<Coordinate>(allCoordinates);
         allCoordinatesExceptBackground.removeIf(coordinate -> image.getColor(coordinate.x, coordinate.y) == drawing.background);
 
-        while (!drawnCoordinates.containsAll(allCoordinatesExceptBackground)) {
+        int i = 0;
+        int spotInfiniteLoop = 1000;
+        while (!drawnCoordinates.containsAll(allCoordinatesExceptBackground) && i < spotInfiniteLoop) {
             Map.Entry<Direction, Integer> pairDirectionLength = findBestNeighbourDirection();
             if (pairDirectionLength == null) {
                 resolveStuckCase();
@@ -72,6 +75,7 @@ public class Compressor
                 colorIndexToTest++;
             }
             System.out.print("");
+            spotInfiniteLoop++;
         }
 
         return drawing;
