@@ -3,14 +3,15 @@ import java.util.stream.Collectors;
 
 public class Compressor
 {
-    // TODO make three fields private
+    // TODO make four fields private
     protected Image image;
     protected Drawing drawing;
     protected Coordinate cursor;
-    List<Coordinate> drawnCoordinates;
-    List<Integer> colors;
+    protected List<Coordinate> drawnCoordinates;
+    private List<Integer> colors;
     private List<Coordinate> allCoordinates;
     private int colorIndexToTest = 0;
+    private List<Integer> colorsDrawn;
 
     public Compressor(Image image)
     {
@@ -18,6 +19,7 @@ public class Compressor
         cursor = new Coordinate(0, 0);
         allCoordinates = new ArrayList<Coordinate>();
         drawnCoordinates = new ArrayList<Coordinate>();
+        colorsDrawn = new ArrayList<Integer>();
 
         HashMap<Integer, Integer> mapOfColors = new HashMap<Integer, Integer>();
         int height = image.pixels.length;
@@ -41,6 +43,7 @@ public class Compressor
 
         // TODO make algorithm more predictive
         int backgroundColor = getColorToTest();
+        colorsDrawn.add(backgroundColor);
         colorIndexToTest++;
         drawing = new Drawing(height, width, backgroundColor);
     }
@@ -72,13 +75,20 @@ public class Compressor
             ArrayList<Coordinate> currentColorAllCoordinatesExceptBackground = new ArrayList<Coordinate>(allCoordinatesExceptBackground);
             currentColorAllCoordinatesExceptBackground.removeIf(coordinate -> image.getColor(coordinate) != getColorToTest());
             if (currentColorDrawnCoordinates.containsAll(currentColorAllCoordinatesExceptBackground)) {
+                colorsDrawn.add(getColorToTest());
                 colorIndexToTest++;
+                clearDrawnCoordinates();
             }
             System.out.print("");
             spotInfiniteLoop++;
         }
 
         return drawing;
+    }
+
+    private void clearDrawnCoordinates()
+    {
+        drawnCoordinates.removeIf(coordinate -> !colorsDrawn.contains(image.getColor(coordinate)));
     }
 
     private int getColorToTest()
