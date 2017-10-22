@@ -12,6 +12,7 @@ public class Compressor
     private List<Coordinate> allCoordinates;
     private int colorIndexToTest = 0;
     private List<Integer> colorsDrawn;
+    private ArrayList<Coordinate> allCoordinatesExceptBackground;
 
     public Compressor(Image image)
     {
@@ -55,8 +56,7 @@ public class Compressor
                 allCoordinates.add(new Coordinate(x, y));
             }
         }
-
-        ArrayList<Coordinate> allCoordinatesExceptBackground = new ArrayList<Coordinate>(allCoordinates);
+        allCoordinatesExceptBackground = new ArrayList<Coordinate>(allCoordinates);
         allCoordinatesExceptBackground.removeIf(coordinate -> image.getColor(coordinate.x, coordinate.y) == drawing.background);
 
         int i = 0;
@@ -96,60 +96,23 @@ public class Compressor
         return colors.get(colorIndexToTest);
     }
 
-    private int getColorDirection(Direction d)
-    {
-        if (d == Direction.LEFT) {
-            return image.getColor(cursor.x - 1, cursor.y);
-        }
-        if (d == Direction.RIGHT) {
-            return image.getColor(cursor.x + 1, cursor.y);
-        }
-        if (d == Direction.UP) {
-            return image.getColor(cursor.x, cursor.y - 1);
-        }
-        if (d == Direction.DOWN) {
-            return image.getColor(cursor.x, cursor.y + 1);
-        }
-
-        return 0;
-    }
-
     private void resolveStuckCase()
     {
         ArrayList<Coordinate> notDrawn = new ArrayList<Coordinate>(allCoordinates);
         notDrawn.removeAll(drawnCoordinates);
         notDrawn.removeIf(coordinate -> image.getColor(coordinate.x, coordinate.y) != getColorToTest());
 
-        Coordinate coordinateSelected = null;
-        int numOfMovesRequired = -1;
-        for (Coordinate coordinate : notDrawn) {
-            int costCalculated = calculateCost(coordinate);
-            if (numOfMovesRequired == -1 || costCalculated < numOfMovesRequired) {
-                numOfMovesRequired = costCalculated;
-                coordinateSelected = coordinate;
-            }
+        ArrayList<Line> lines = createLines();
+
+        ArrayList<Coordinate> coordinates = new ArrayList<Coordinate>();
+
+        for (Line l : lines) {
+            coordinates.addAll(findBestDrawingCoordinate(l));
         }
 
-        if (coordinateSelected == null) {
-            System.err.println("No coordinate has been selected to resolve this stuck case.");
-            return;
-        }
-
-        ArrayList<Coordinate> spotsAroundCoordinateSelected = new ArrayList<Coordinate>();
-        spotsAroundCoordinateSelected.add(new Coordinate(coordinateSelected.x + 1, coordinateSelected.y));
-        spotsAroundCoordinateSelected.add(new Coordinate(coordinateSelected.x - 1, coordinateSelected.y));
-        spotsAroundCoordinateSelected.add(new Coordinate(coordinateSelected.x, coordinateSelected.y + 1));
-        spotsAroundCoordinateSelected.add(new Coordinate(coordinateSelected.x, coordinateSelected.y - 1));
-
-        Coordinate nextToCoordinateSelected = null;
-        int smallestCost = -1;
-        for (Coordinate coordinate : spotsAroundCoordinateSelected) {
-            int costCalculated = calculateCost(coordinate);
-            if (smallestCost == -1 || costCalculated < smallestCost) {
-                smallestCost = costCalculated;
-                nextToCoordinateSelected = coordinate;
-            }
-        }
+        Coordinate nextToCoordinateSelected = coordinates.stream()
+                .min(Comparator.comparingInt(this::calculateCost))
+                .orElse(null);
 
         if (nextToCoordinateSelected == null) {
             System.err.println("No coordinate, next to target coordinate, has been selected to resolve this stuck case.");
@@ -168,6 +131,72 @@ public class Compressor
         if (nextToCoordinateSelected.y > cursor.y) {
             addCommand(Direction.DOWN, Math.abs(nextToCoordinateSelected.y - cursor.y), false, 0);
         }
+    }
+
+    private ArrayList<Line> createLines()
+    {
+        ArrayList<Line> lines = new ArrayList<Line>();
+        ArrayList<Coordinate> notDrawn = new ArrayList<>(allCoordinatesExceptBackground);
+        notDrawn.removeIf(coordinate -> drawnCoordinates.contains(coordinate));
+        notDrawn.removeIf(coordinate -> getColorToTest() != image.getColor(coordinate));
+        for (Coordinate c : notDrawn) {
+            int left = findNeighboursLength(Direction.LEFT);
+            int right = findNeighboursLength(Direction.RIGHT);
+            int up = findNeighboursLength(Direction.UP);
+            int down = findNeighboursLength(Direction.DOWN);
+            int horizontal = left + right + 1;
+            int vertical = up + down + 1;
+            if (horizontal == 1 && vertical == 1) {
+                lines.add(new Line(c, c));
+                continue;
+            }
+            if (vertical > 1) {
+                lines.add(new Line(new Coordinate(c.x, c.y - up), new Coordinate(c.x, c.y + down)));
+            }
+            if (horizontal > 1) {
+                lines.add(new Line(new Coordinate(c.x - left, c.y), new Coordinate(c.x + right, c.y)));
+            }
+        }
+
+        return lines;
+    }
+
+    private ArrayList<Coordinate> findBestDrawingCoordinate(Line l)
+    {
+        ArrayList<Coordinate> coordinates = new ArrayList<Coordinate>();
+        Direction direction = l.getDirecton();
+        LineType lineType = l.findLineType();
+        if (lineType.equals(LineType.VERTICAL)) {
+
+            if (direction.equals(Direction.DOWN)) {
+                coordinates.add(new Coordinate(l.start.x, l.start.y - 1));
+                coordinates.add(new Coordinate(l.end.x, l.end.y + 1));
+            } else {
+                // up
+                coordinates.add(new Coordinate(l.start.x, l.start.y + 1));
+                coordinates.add(new Coordinate(l.end.x, l.end.y - 1));
+            }
+
+        } else if (lineType.equals(LineType.HORIZONTAL)) {
+
+            if (direction.equals(Direction.RIGHT)) {
+                // right
+                coordinates.add(new Coordinate(l.start.x - 1, l.start.y));
+                coordinates.add(new Coordinate(l.end.x + 1, l.end.y));
+            } else {
+                // left
+                coordinates.add(new Coordinate(l.start.x + 1, l.start.y));
+                coordinates.add(new Coordinate(l.end.x - 1, l.end.y));
+            }
+
+        } else if (lineType.equals(LineType.SINGLE)) {
+            coordinates.add(new Coordinate(l.start.x - 1, l.start.y));
+            coordinates.add(new Coordinate(l.start.x + 1, l.start.y));
+            coordinates.add(new Coordinate(l.start.x, l.start.y - 1));
+            coordinates.add(new Coordinate(l.start.x, l.start.y + 1));
+        }
+
+        return coordinates;
     }
 
     private int calculateCost(Coordinate c)
@@ -313,6 +342,56 @@ public class Compressor
         }
 
         return i;
+    }
+}
+
+enum LineType
+{
+    VERTICAL, HORIZONTAL, SINGLE;
+}
+
+class Line
+{
+    protected Coordinate start;
+    protected Coordinate end;
+
+    public Line(Coordinate s, Coordinate e)
+    {
+        start = s;
+        end = e;
+    }
+
+    protected LineType findLineType()
+    {
+        if (start.equals(end)) {
+            return LineType.SINGLE;
+        }
+        if (start.x == end.x) {
+            return LineType.VERTICAL;
+        }
+        if (start.y == end.y) {
+            return LineType.HORIZONTAL;
+        }
+
+        return null;
+    }
+
+    protected Direction getDirecton()
+    {
+        if (start.x < end.x) {
+            return Direction.RIGHT;
+        }
+        if (start.x > end.x) {
+            return Direction.LEFT;
+        }
+        if (start.y < end.y) {
+            return Direction.DOWN;
+        }
+        if (start.y > end.y) {
+            return Direction.UP;
+        }
+
+        return null;
     }
 }
 
