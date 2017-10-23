@@ -17,17 +17,17 @@ public class CompressorTestWithScore
     public static Collection<Object[]> data()
     {
         return Arrays.asList(new Object[][]{
-                {"./test-image1", 14, 14},
-                {"./test-image2", 30, 29},
-                {"./test-image3", 200, 200},
-                {"./test-image4", 23, 22},
-                {"./test-image5", 92, 26},
-                {"./pixel-art1", 230, 215},
-                {"./pixel-art2", 197, 181},
-                {"./pixel-art3", 44, 43},
-                {"./pixel-art4", 58, 55},
-                {"./pixel-art5", 201, 176},
-                {"./pixel-art6", 128, 113},
+                {"./test-image1"},
+                {"./test-image2"},
+                {"./test-image3"},
+                {"./test-image4"},
+                {"./test-image5"},
+                {"./pixel-art1"},
+                {"./pixel-art2"},
+                {"./pixel-art3"},
+                {"./pixel-art4"},
+                {"./pixel-art5"},
+                {"./pixel-art6"},
         });
     }
 
@@ -36,12 +36,6 @@ public class CompressorTestWithScore
     {
         @Parameter
         public String filename;
-
-        @Parameter(1)
-        public int maxScore;
-
-        @Parameter(2)
-        public int compScore;
 
         @Parameters(name = "{0}")
         public static Collection<Object[]> data()
@@ -58,8 +52,7 @@ public class CompressorTestWithScore
 
             String name = filename.substring(2);
 
-            //assertEquals(maxScore, d.commands.size());
-            System.out.println(name + " Commands: " + d.commands.size() + " - Competitor score beats me by: " + (d.commands.size() - compScore));
+            System.out.println(name + " Commands: " + d.commands.size());
 
             try {
                 assertEquals(i.toString(), d.draw().toString());
@@ -75,16 +68,14 @@ public class CompressorTestWithScore
         public void score()
         {
             int score = 0;
-            int diff = 0;
 
             for (Object[] f : CompressorTestWithScore.data()) {
                 Image i = new Image((String) f[0]);
                 Drawing d = i.compress();
                 score += d.commands.size();
-                diff += d.commands.size() - (int) f[2];
             }
 
-            System.out.println("Total Commands: " + score + " - Competitor total beats me by: " +  diff);
+            System.out.println("Total Commands: " + score);
             System.out.println();
         }
     }

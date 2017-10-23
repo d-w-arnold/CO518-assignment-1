@@ -74,21 +74,21 @@ public class Image
 
     public static void main(String[] args)
     {
-//      A simple test to read in an image and print it out.
-//      Image i = new Image(args[0]);
-//      System.out.print(i.toString());
-//      i.toPNG(args[0]);
-        // TODO Set image for args[0]
-        Image image = new Image("./pixel-art1");
-        // TODO change to compress method
-        Drawing d = image.compressDebug();
-        System.out.println(d.commands.size());
-        try {
-            System.out.println(d.draw());
-            System.out.println(d.draw().toString().equals(image.toString()));
-        } catch (BadCommand badCommand) {
-            badCommand.printStackTrace();
-        }
+        // A simple test to read in an image and print it out.
+        Image i = new Image(args[0]);
+        System.out.print(i.toString());
+        i.toPNG(args[0]);
+
+//        Image image = new Image(args[0]);
+//        Drawing d = image.compress();
+//        System.out.println(d.commands.size());
+//        try {
+//            System.out.println(d.draw());
+//            System.out.println(d.draw().toString().equals(image.toString()));
+//        } catch (BadCommand badCommand) {
+//            badCommand.printStackTrace();
+//        }
+
     }
 
     // Get back the original text-based representation
@@ -124,13 +124,6 @@ public class Image
         return c.compress();
     }
 
-    // TODO remove compressDebug method
-    public Drawing compressDebug()
-    {
-        Compressor c = new CompressorDebugger(this);
-        return c.compress();
-    }
-
     // Render the image into a PNG with the given filename.
     public void toPNG(String filename)
     {
@@ -152,13 +145,13 @@ public class Image
     }
 
     /**
-     * Task 1:
+     * Task 1
      */
     public void set(int x, int y, int color) throws BadCommand {
         try {
             pixels[y][x] = color;
         } catch (ArrayIndexOutOfBoundsException e) {
-            throw new BadCommand();
+            throw new BadCommand("Pixel is out of bounds.");
         }
     }
 

@@ -4,10 +4,10 @@ import java.util.stream.Collectors;
 public class Compressor
 {
     // TODO make four fields private
-    protected Image image;
-    protected Drawing drawing;
-    protected Coordinate cursor;
-    protected List<Coordinate> drawnCoordinates;
+    private Image image;
+    private Drawing drawing;
+    private Coordinate cursor;
+    private List<Coordinate> drawnCoordinates;
     private List<Integer> colors;
     private List<Coordinate> allCoordinates;
     private int colorIndexToTest = 0;
@@ -42,7 +42,6 @@ public class Compressor
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
 
-        // TODO make algorithm more predictive
         int backgroundColor = getColorToTest();
         colorsDrawn.add(backgroundColor);
         colorIndexToTest++;
@@ -104,32 +103,35 @@ public class Compressor
 
         ArrayList<Line> lines = createLines();
 
-        ArrayList<Coordinate> coordinates = new ArrayList<Coordinate>();
+        List<LineTargetCost> lineTargetCosts = new ArrayList<>();
 
-        for (Line l : lines) {
-            coordinates.addAll(findBestDrawingCoordinate(l));
+        for (Line line : lines) {
+            lineTargetCosts.addAll(findBestDrawingCoordinate(line));
         }
 
-        Coordinate nextToCoordinateSelected = coordinates.stream()
-                .min(Comparator.comparingInt(this::calculateCost))
-                .orElse(null);
+        int minCost = lineTargetCosts.stream().min(Comparator.comparingInt(o -> o.cost)).get().cost;
 
-        if (nextToCoordinateSelected == null) {
+        Coordinate target = lineTargetCosts.stream()
+                .filter(lineTargetCost -> lineTargetCost.cost == minCost)
+                .max(Comparator.comparingInt((LineTargetCost ltc) -> ltc.line.getLength()))
+                .get().target;
+
+        if (target == null) {
             System.err.println("No coordinate, next to target coordinate, has been selected to resolve this stuck case.");
             return;
         }
 
-        if (nextToCoordinateSelected.x < cursor.x) {
-            addCommand(Direction.LEFT, Math.abs(cursor.x - nextToCoordinateSelected.x), false, 0);
+        if (target.x < cursor.x) {
+            addCommand(Direction.LEFT, Math.abs(cursor.x - target.x), false, 0);
         }
-        if (nextToCoordinateSelected.x > cursor.x) {
-            addCommand(Direction.RIGHT, Math.abs(nextToCoordinateSelected.x - cursor.x), false, 0);
+        if (target.x > cursor.x) {
+            addCommand(Direction.RIGHT, Math.abs(target.x - cursor.x), false, 0);
         }
-        if (nextToCoordinateSelected.y < cursor.y) {
-            addCommand(Direction.UP, Math.abs(cursor.y - nextToCoordinateSelected.y), false, 0);
+        if (target.y < cursor.y) {
+            addCommand(Direction.UP, Math.abs(cursor.y - target.y), false, 0);
         }
-        if (nextToCoordinateSelected.y > cursor.y) {
-            addCommand(Direction.DOWN, Math.abs(nextToCoordinateSelected.y - cursor.y), false, 0);
+        if (target.y > cursor.y) {
+            addCommand(Direction.DOWN, Math.abs(target.y - cursor.y), false, 0);
         }
     }
 
@@ -161,7 +163,7 @@ public class Compressor
         return lines;
     }
 
-    private ArrayList<Coordinate> findBestDrawingCoordinate(Line l)
+    private List<LineTargetCost> findBestDrawingCoordinate(Line l)
     {
         ArrayList<Coordinate> coordinates = new ArrayList<Coordinate>();
         Direction direction = l.getDirecton();
@@ -196,7 +198,9 @@ public class Compressor
             coordinates.add(new Coordinate(l.start.x, l.start.y + 1));
         }
 
-        return coordinates;
+        return coordinates.stream()
+                .map(coordinate -> new LineTargetCost(l, coordinate, calculateCost(coordinate)))
+                .collect(Collectors.toList());
     }
 
     private int calculateCost(Coordinate c)
@@ -213,7 +217,7 @@ public class Compressor
     }
 
     // TODO make addCommand method private
-    protected void addCommand(Direction d, int l, boolean paint, int color)
+    private void addCommand(Direction d, int l, boolean paint, int color)
     {
         String newHexColor = Integer.toString(color, 16);
         if (paint) {
@@ -392,6 +396,25 @@ class Line
         }
 
         return null;
+    }
+
+    protected int getLength()
+    {
+        return Math.abs((start.x - end.x) + (start.y - end.y)) + 1;
+    }
+}
+
+class LineTargetCost
+{
+    protected Line line;
+    protected Coordinate target;
+    protected int cost;
+
+    public LineTargetCost(Line line, Coordinate target, int cost)
+    {
+        this.line = line;
+        this.target = target;
+        this.cost = cost;
     }
 }
 
