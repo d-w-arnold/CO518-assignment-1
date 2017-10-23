@@ -74,19 +74,21 @@ public class Image
 
     public static void main(String[] args)
     {
-//      A simple test to read in an image and print it out.
-//      Image i = new Image(args[0]);
-//      System.out.print(i.toString());
-//      i.toPNG(args[0]);
-        Image image = new Image("./test-image2");
-        Drawing d = image.compress();
-        System.out.println(d.commands.size());
-        try {
-            System.out.println(d.draw());
-            System.out.println(d.draw().toString().equals(image.toString()));
-        } catch (BadCommand badCommand) {
-            badCommand.printStackTrace();
-        }
+        // A simple test to read in an image and print it out.
+        Image i = new Image(args[0]);
+        System.out.print(i.compress().toString());
+        i.toPNG(args[0]);
+
+//        Image image = new Image(args[0]);
+//        Drawing d = image.compress();
+//        System.out.println(d.commands.size());
+//        try {
+//            System.out.println(d.draw());
+//            System.out.println(d.draw().toString().equals(image.toString()));
+//        } catch (BadCommand badCommand) {
+//            badCommand.printStackTrace();
+//        }
+
     }
 
     // Get back the original text-based representation
@@ -143,18 +145,23 @@ public class Image
     }
 
     /**
-     * Task 1:
+     * Task 1
      */
     public void set(int x, int y, int color) throws BadCommand {
         try {
             pixels[y][x] = color;
         } catch (ArrayIndexOutOfBoundsException e) {
-            throw new BadCommand();
+            throw new BadCommand("Pixel is out of bounds.");
         }
     }
 
     public int getColor(int x, int y)
     {
         return pixels[y][x];
+    }
+
+    public  int getColor(Coordinate c)
+    {
+        return getColor(c.x, c.y);
     }
 }

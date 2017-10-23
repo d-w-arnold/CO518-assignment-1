@@ -101,8 +101,10 @@ class DrawingCommand
 
 class BadCommand extends Exception
 {
-    // Consider adding fields here describing the exceptional circumstance
-    // TODO Fill in BadCommand
+    public BadCommand(String message)
+    {
+        super(message);
+    }
 }
 
 // Represent a picture as the height and width, and a sequence of drawing
@@ -207,11 +209,6 @@ public class Drawing
 
     public static void main(String[] args)
     {
-        // ** Change for submission **
-        args = new String[1];
-        // ** Change for submission **
-        args[0] = "test-commands1";
-
         // A simple test to read in a file of drawing commands and print it out.
         Drawing d = new Drawing(args[0]);
         try {

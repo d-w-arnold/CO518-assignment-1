@@ -4,28 +4,30 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
+
 import java.util.Arrays;
 import java.util.Collection;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 @RunWith(Enclosed.class)
 public class CompressorTestWithScore
 {
-    public static Collection<Object> data()
+    public static Collection<Object[]> data()
     {
-        return Arrays.asList(new Object[]{
-                "./test-image1",
-                "./test-image2",
-                "./test-image3",
-                "./test-image4",
-                "./test-image5",
-                "./pixel-art1",
-                "./pixel-art2",
-                "./pixel-art3",
-                "./pixel-art4",
-                "./pixel-art5",
-                "./pixel-art6",
+        return Arrays.asList(new Object[][]{
+                {"./test-image1"},
+                {"./test-image2"},
+                {"./test-image3"},
+                {"./test-image4"},
+                {"./test-image5"},
+                {"./pixel-art1"},
+                {"./pixel-art2"},
+                {"./pixel-art3"},
+                {"./pixel-art4"},
+                {"./pixel-art5"},
+                {"./pixel-art6"},
         });
     }
 
@@ -36,7 +38,7 @@ public class CompressorTestWithScore
         public String filename;
 
         @Parameters(name = "{0}")
-        public static Collection<Object> data()
+        public static Collection<Object[]> data()
         {
             return CompressorTestWithScore.data();
         }
@@ -67,8 +69,8 @@ public class CompressorTestWithScore
         {
             int score = 0;
 
-            for (Object f : CompressorTestWithScore.data()) {
-                Image i = new Image((String) f);
+            for (Object[] f : CompressorTestWithScore.data()) {
+                Image i = new Image((String) f[0]);
                 Drawing d = i.compress();
                 score += d.commands.size();
             }
