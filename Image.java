@@ -3,8 +3,12 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.ArrayList;
 
-// This class represents a simple rectangular image, where each pixel can be
-// one of 16 colours.
+/**
+ * Image Class.
+ *
+ * This class represents a simple rectangular image, where each pixel can be
+ * one of 16 colours.
+ */
 public class Image
 {
 
@@ -18,8 +22,12 @@ public class Image
     // Store a 2 dimensional image with "colours" as numbers between 0 and 15
     public int pixels[][];
 
-    // Read in an image from a file. Each line of the file must be the same
-    // length, and only contain single digit hex numbers 0-9 and a-f.
+    /**
+     * Read in an image from a file. Each line of the file must be the same
+     * length, and only contain single digit hex numbers 0-9 and a-f.
+     *
+     * @param filename The file to be read.
+     */
     public Image(String filename)
     {
         // Read the whole file into lines
@@ -63,7 +71,13 @@ public class Image
         }
     }
 
-    // Create a solid image with given dimensions and colour
+    /**
+     * Create a solid image with given dimensions and colour.
+     *
+     * @param height The height.
+     * @param width The width.
+     * @param colour The colour of the background.
+     */
     public Image(int height, int width, int colour)
     {
         pixels = new int[height][width];
@@ -72,6 +86,9 @@ public class Image
                 pixels[i][j] = colour;
     }
 
+    /**
+     * Main method.
+     */
     public static void main(String[] args)
     {
         // A simple test to read in an image and print it out.
@@ -91,7 +108,11 @@ public class Image
 
     }
 
-    // Get back the original text-based representation
+    /**
+     * Custom toString to get back the original text-based representation.
+     *
+     * @return A string with the original text-based representation.
+     */
     public String toString()
     {
         StringBuilder s = new StringBuilder(pixels.length * pixels[0].length);
@@ -124,7 +145,11 @@ public class Image
         return c.compress();
     }
 
-    // Render the image into a PNG with the given filename.
+    /**
+     * Render the image into a PNG with the given filename.
+     *
+     * @param filename The file to be rendered into a PNG.
+     */
     public void toPNG(String filename)
     {
 
@@ -145,7 +170,11 @@ public class Image
     }
 
     /**
-     * Task 1
+     * As part of Task 1, this method sets the colour of a specific pixel.
+     *
+     * @param x The x value.
+     * @param y The y value.
+     * @param color The colour to be painted at a specific pixel.
      */
     public void set(int x, int y, int color) throws BadCommand {
         try {
@@ -155,12 +184,25 @@ public class Image
         }
     }
 
+    /**
+     * Get colour at a specific pixel, using x and y values.
+     *
+     * @param x Value of x.
+     * @param y Value of y.
+     * @return The colour at the specified coordinate.
+     */
     public int getColor(int x, int y)
     {
         return pixels[y][x];
     }
 
-    public  int getColor(Coordinate c)
+    /**
+     * Get colour at a specific pixel, using a Coordinate object.
+     *
+     * @param c The Coordinate object to refer to.
+     * @return The colour at the specified coordinate.
+     */
+    public int getColor(Coordinate c)
     {
         return getColor(c.x, c.y);
     }

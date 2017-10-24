@@ -4,6 +4,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 
+/**
+ * Direction Enum Class.
+ */
 enum Direction
 {
     UP {
@@ -32,9 +35,13 @@ enum Direction
     }
 }
 
-// A single drawing command. Which direction to go in, how far to move, and
-// whether to paint all of the spaces in-between, or leave them as-is. Also
-// indicate which colour if painting.
+/**
+ * DrawingCommand Class.
+ *
+ * A single drawing command. Which direction to go in, how far to move, and
+ * whether to paint all of the spaces in-between, or leave them as-is. Also
+ * indicate which colour if painting.
+ */
 class DrawingCommand
 {
     public Direction dir;
@@ -42,12 +49,20 @@ class DrawingCommand
     public boolean paint;
     public int colour;
 
-    // Read in a Drawing commands from a string
+    // Reads in a Drawing commands from a string
     // The format should be "direction distance colour" or "direction distance"
     // if moving without painting, for example
     // left 10 3
     // up 1
     // up 2 c
+
+    /**
+     * Reads in Drawing commands from a string.
+     * The format should be "direction distance colour" or "direction distance"
+     * if moving without painting for example.
+     *
+     * @param s The string of Drawing commands to be read.
+     */
     public DrawingCommand(String s)
     {
         // Split the string by whitespace
@@ -93,14 +108,27 @@ class DrawingCommand
         }
     }
 
+    /**
+     * Custom toString method.
+     *
+     * @return A string for a single Drawing command.
+     */
     public String toString()
     {
         return (dir.toString() + " " + distance + " " + (paint ? Integer.toHexString(colour) : ""));
     }
 }
 
+/**
+ * BadCommand Class.
+ */
 class BadCommand extends Exception
 {
+    /**
+     * Returns an error message.
+     *
+     * @param message The message to be returned.
+     */
     public BadCommand(String message)
     {
         super(message);
@@ -145,6 +173,9 @@ class BadCommand extends Exception
 // 12
 // 00
 
+/**
+ * Drawing Class.
+ */
 public class Drawing
 {
 
@@ -153,10 +184,14 @@ public class Drawing
     public int background;
     ArrayList<DrawingCommand> commands;
 
-    // Read in an ArrayList of drawing commands from a file. There should be
-    // exactly 1 command per line. The first two lines should be 2 numbers for
-    // the height and width rather than commands. The third line is the
-    // background colour.
+    /**
+     * Read in an ArrayList of drawing commands from a file. There should be
+     * exactly 1 command per line. The first two lines should be 2 numbers for
+     * the height and width rather than commands. The third line is the
+     * background colour.
+     *
+     * @param filename The file name containing the Drawing commands.
+     */
     public Drawing(String filename)
     {
         commands = new ArrayList<DrawingCommand>();
@@ -197,7 +232,13 @@ public class Drawing
         }
     }
 
-    // create an empty drawing of the given dimensions
+    /**
+     * Create an empty drawing of the given dimensions.
+     *
+     * @param h The height of the drawing.
+     * @param w The width of the drawing.
+     * @param b The initial background colour.
+     */
     public Drawing(int h, int w, int b)
     {
         height = h;
@@ -207,6 +248,9 @@ public class Drawing
         commands = new ArrayList<DrawingCommand>();
     }
 
+    /**
+     * Main method.
+     */
     public static void main(String[] args)
     {
         // A simple test to read in a file of drawing commands and print it out.
@@ -218,11 +262,21 @@ public class Drawing
         }
     }
 
+    /**
+     * Add a command to the list of commands.
+     *
+     * @param c The command to add to the list.
+     */
     public void addCommand(DrawingCommand c)
     {
         commands.add(c);
     }
 
+    /**
+     * Custom toString method for a list of Drawing commands.
+     *
+     * @return The list of drawing commands.
+     */
     public String toString()
     {
         StringBuilder s = new StringBuilder();

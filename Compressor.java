@@ -1,9 +1,11 @@
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Compressor Class.
+ */
 public class Compressor
 {
-    // TODO make four fields private
     private Image image;
     private Drawing drawing;
     private Coordinate cursor;
@@ -14,6 +16,11 @@ public class Compressor
     private List<Integer> colorsDrawn;
     private ArrayList<Coordinate> allCoordinatesExceptBackground;
 
+    /**
+     * Reads in the image to be compressed.
+     *
+     * @param image The image to be compressed.
+     */
     public Compressor(Image image)
     {
         this.image = image;
@@ -48,6 +55,11 @@ public class Compressor
         drawing = new Drawing(height, width, backgroundColor);
     }
 
+    /**
+     * The method used to compress an image into Drawing commands.
+     *
+     * @return The compressed drawing object
+     */
     public Drawing compress()
     {
         for (int x = 0; x < image.pixels[0].length; x++) {
@@ -55,6 +67,7 @@ public class Compressor
                 allCoordinates.add(new Coordinate(x, y));
             }
         }
+
         allCoordinatesExceptBackground = new ArrayList<Coordinate>(allCoordinates);
         allCoordinatesExceptBackground.removeIf(coordinate -> image.getColor(coordinate.x, coordinate.y) == drawing.background);
 
@@ -69,15 +82,19 @@ public class Compressor
                 int l = pairDirectionLength.getValue();
                 addCommand(d, l, true, getColorToTest());
             }
+
             ArrayList<Coordinate> currentColorDrawnCoordinates = new ArrayList<Coordinate>(drawnCoordinates);
             currentColorDrawnCoordinates.removeIf(coordinate -> image.getColor(coordinate) != getColorToTest());
+
             ArrayList<Coordinate> currentColorAllCoordinatesExceptBackground = new ArrayList<Coordinate>(allCoordinatesExceptBackground);
             currentColorAllCoordinatesExceptBackground.removeIf(coordinate -> image.getColor(coordinate) != getColorToTest());
+
             if (currentColorDrawnCoordinates.containsAll(currentColorAllCoordinatesExceptBackground)) {
                 colorsDrawn.add(getColorToTest());
                 colorIndexToTest++;
                 clearDrawnCoordinates();
             }
+
             System.out.print("");
             spotInfiniteLoop++;
         }
@@ -85,16 +102,30 @@ public class Compressor
         return drawing;
     }
 
+    /**
+     * Clears the drawnCoordinates list of any coordinates containing colours
+     * which aren't suppose to have been drawn yet.
+     */
     private void clearDrawnCoordinates()
     {
         drawnCoordinates.removeIf(coordinate -> !colorsDrawn.contains(image.getColor(coordinate)));
     }
 
+    /**
+     * Get the colour we will be painting with as we draw colours on top of the background.
+     *
+     * @return The colour we will be painting.
+     */
     private int getColorToTest()
     {
         return colors.get(colorIndexToTest);
     }
 
+    /**
+     * If no coordinate adjacent to the cursor is drawable, I look for the next drawable coordinate
+     * with the smallest number of commands to move there, but with the
+     * greatest number of pixels in a straight line (more pixels drawn per command).
+     */
     private void resolveStuckCase()
     {
         ArrayList<Coordinate> notDrawn = new ArrayList<Coordinate>(allCoordinates);
@@ -135,6 +166,12 @@ public class Compressor
         }
     }
 
+    /**
+     * Creates an arraylist of potential lines which can be drawn, so that the
+     * resolveStuckCase method can decide which one is best to draw next.
+     *
+     * @return The potential lines to draw in a stuck case scenario.
+     */
     private ArrayList<Line> createLines()
     {
         ArrayList<Line> lines = new ArrayList<Line>();
@@ -163,6 +200,13 @@ public class Compressor
         return lines;
     }
 
+    /**
+     * Finds the best coordinate to move to to draw a line in a stuck case scenario.
+     *
+     * @param l The line we know we are going to draw.
+     * @return A ListTargetCost object containing detail of the line, the target
+     * coordinate and the cost of getting to that coordinate.
+     */
     private List<LineTargetCost> findBestDrawingCoordinate(Line l)
     {
         ArrayList<Coordinate> coordinates = new ArrayList<Coordinate>();
@@ -203,6 +247,12 @@ public class Compressor
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Calculates the cost of moving to a specific coordinate from where the cursor is currently positioned.
+     *
+     * @param c The coordinate to test.
+     * @return The number of moves it would take to move there.
+     */
     private int calculateCost(Coordinate c)
     {
         int cost = 0;
@@ -216,7 +266,14 @@ public class Compressor
         return cost;
     }
 
-    // TODO make addCommand method private
+    /**
+     * Add a command to the string of Drawing commands.
+     *
+     * @param d The direction.
+     * @param l The length.
+     * @param paint True to draw as the cursor moves, false to not draw.
+     * @param color The color to draw, if paint is set to true.
+     */
     private void addCommand(Direction d, int l, boolean paint, int color)
     {
         String newHexColor = Integer.toString(color, 16);
@@ -263,6 +320,11 @@ public class Compressor
         }
     }
 
+    /**
+     * Finds the best way to move out of the adjacent pixels from the cursor.
+     *
+     * @return A map entry set
+     */
     private Map.Entry<Direction, Integer> findBestNeighbourDirection()
     {
         Map<Direction, Integer> map = new HashMap<Direction, Integer>();
@@ -282,6 +344,13 @@ public class Compressor
         return Collections.max(map.entrySet(), Comparator.comparingInt(Map.Entry::getValue));
     }
 
+    /**
+     * Test how far can we move in one direction from where the cursor is currently located.
+     *
+     * @param d The Direction enum to test.
+     * @return The number of pixels we can move in a straight line,
+     * if we can'ty move in that direction, the method returns 0.
+     */
     private int findNeighboursLength(Direction d)
     {
         boolean ifTheLineContainsColor = false;
@@ -349,22 +418,39 @@ public class Compressor
     }
 }
 
+/**
+ * LineType Enum.
+ */
 enum LineType
 {
     VERTICAL, HORIZONTAL, SINGLE;
 }
 
+/**
+ * Line Class.
+ */
 class Line
 {
     protected Coordinate start;
     protected Coordinate end;
 
+    /**
+     * Create a line, with a start and end point, so we can try to draw an entire line in one command.
+     *
+     * @param s The start coordinate.
+     * @param e The end coordinate.
+     */
     public Line(Coordinate s, Coordinate e)
     {
         start = s;
         end = e;
     }
 
+    /**
+     * Finds out whether the line is a single coordinate, a vertical line or a horizontal line.
+     *
+     * @return A LineType object, which is one of three Enums: SINGLE, VERTICAL and HORIZONTAL.
+     */
     protected LineType findLineType()
     {
         if (start.equals(end)) {
@@ -380,6 +466,11 @@ class Line
         return null;
     }
 
+    /**
+     * Gets the direction of a line by comparing the x and y values of the start and end points.
+     *
+     * @return A Direction object defining the direction of travel.
+     */
     protected Direction getDirecton()
     {
         if (start.x < end.x) {
@@ -398,18 +489,34 @@ class Line
         return null;
     }
 
+    /**
+     * Calculates the length of a line.
+     *
+     * @return The length of the line.
+     */
     protected int getLength()
     {
         return Math.abs((start.x - end.x) + (start.y - end.y)) + 1;
     }
 }
 
+/**
+ * LineTargetCost Class.
+ */
 class LineTargetCost
 {
     protected Line line;
     protected Coordinate target;
     protected int cost;
 
+    /**
+     * Defining an object containing the target to start drawing a line and
+     * the cost of moving the cursor to that point.
+     *
+     * @param line The line we want to draw.
+     * @param target The coordinate we move to to draw this line.
+     * @param cost The cost of moving to that coordinate.
+     */
     public LineTargetCost(Line line, Coordinate target, int cost)
     {
         this.line = line;
@@ -418,11 +525,20 @@ class LineTargetCost
     }
 }
 
+/**
+ * Coordinate Class.
+ */
 class Coordinate
 {
     int x;
     int y;
 
+    /**
+     * Provide x and y values for the Coordinate object.
+     *
+     * @param x
+     * @param y
+     */
     public Coordinate(int x, int y)
     {
         this.x = x;
