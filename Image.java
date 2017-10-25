@@ -95,17 +95,6 @@ public class Image
         Image i = new Image(args[0]);
         System.out.print(i.compress().toString());
         i.toPNG(args[0]);
-
-//        Image image = new Image(args[0]);
-//        Drawing d = image.compress();
-//        System.out.println(d.commands.size());
-//        try {
-//            System.out.println(d.draw());
-//            System.out.println(d.draw().toString().equals(image.toString()));
-//        } catch (BadCommand badCommand) {
-//            badCommand.printStackTrace();
-//        }
-
     }
 
     /**
@@ -180,7 +169,7 @@ public class Image
         try {
             pixels[y][x] = color;
         } catch (ArrayIndexOutOfBoundsException e) {
-            throw new BadCommand("Pixel is out of bounds.");
+            throw new BadCommand(x, y);
         }
     }
 

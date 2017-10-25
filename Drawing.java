@@ -127,11 +127,12 @@ class BadCommand extends Exception
     /**
      * Returns an error message.
      *
-     * @param message The message to be returned.
+     * @param x The value of x.
+     * @param y The value of y.
      */
-    public BadCommand(String message)
+    public BadCommand(int x, int y)
     {
-        super(message);
+        super("Cannot be drawn at coordinate: (" + x + "," + y + ")");
     }
 }
 
@@ -302,44 +303,46 @@ public class Drawing
      */
     public Image draw() throws BadCommand
     {
-        int x = 0;
-        int y = 0;
-        int newX = 0;
-        int newY = 0;
+        Coordinate cursor = new Coordinate(0,0);
+        Coordinate newCursor = new Coordinate(0,0);
         Image newImage = new Image(height, width, background);
         for (DrawingCommand command : commands) {
-            if (command.dir == Direction.UP) {
+            if (command.distance == 0) {
+                if (command.paint) {
+                    newImage.set(cursor.x, cursor.y, command.colour);
+                }
+            } else if (command.dir == Direction.UP) {
                 for (int i = 0; i < command.distance; i++) {
-                    newY--;
+                    newCursor.y--;
                     if (command.paint) {
-                        newImage.set(x, newY, command.colour);
+                        newImage.set(cursor.x, newCursor.y, command.colour);
                     }
                 }
-                y = newY;
+                cursor.y = newCursor.y;
             } else if (command.dir == Direction.DOWN) {
                 for (int i = 0; i < command.distance; i++) {
-                    newY++;
+                    newCursor.y++;
                     if (command.paint) {
-                        newImage.set(x, newY, command.colour);
+                        newImage.set(cursor.x, newCursor.y, command.colour);
                     }
                 }
-                y = newY;
+                cursor.y = newCursor.y;
             } else if (command.dir == Direction.LEFT) {
                 for (int i = 0; i < command.distance; i++) {
-                    newX--;
+                    newCursor.x--;
                     if (command.paint) {
-                        newImage.set(newX, y, command.colour);
+                        newImage.set(newCursor.x, cursor.y, command.colour);
                     }
                 }
-                x = newX;
+                cursor.x = newCursor.x;
             } else if (command.dir == Direction.RIGHT) {
                 for (int i = 0; i < command.distance; i++) {
-                    newX++;
+                    newCursor.x++;
                     if (command.paint) {
-                        newImage.set(newX, y, command.colour);
+                        newImage.set(newCursor.x, cursor.y, command.colour);
                     }
                 }
-                x = newX;
+                cursor.x = newCursor.x;
             }
         }
         return newImage;

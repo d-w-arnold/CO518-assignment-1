@@ -3,6 +3,9 @@ import java.util.stream.Collectors;
 
 /**
  * Compressor Class.
+ *
+ * @author David W. Arnold
+ * @version 25/10/2017
  */
 public class Compressor
 {
